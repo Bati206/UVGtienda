@@ -50,7 +50,7 @@ public class Producto {
     
     public void setUnidadesDisponibles(int unidadesDisponibles) {
         this.unidadesDisponibles = unidadesDisponibles;
-        this.disponible = unidadesDisponibles > 0;
+        this.disponible = this.unidadesDisponibles > 0;
     }
     
 }
