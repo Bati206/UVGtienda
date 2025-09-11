@@ -1,55 +1,79 @@
-package mainuvtienda;
-
 import java.util.ArrayList;
+import java.util.List;
 
 public class Kit extends Producto {
-    private ArrayList<Producto> productos; // Productos dentro del kit
+    private List<Producto> productos;
 
-    // Constructor del kit
-    public Kit(String nombreKit, double precioKit, int unidadesDisponibles) {
-        super(nombreKit, precioKit, unidadesDisponibles); // Llama al constructor de Producto
+    // Constructor
+    public Kit(String nombre, double precio, Producto[] productos, boolean disponible, int stock) {
+        super(nombre, precio, disponible, stock);
         this.productos = new ArrayList<>();
+        for (Producto p : productos) {
+            this.productos.add(p);
+        }
     }
 
-    // Agregar un producto al kit
-    public void agregarProducto(Producto producto) {
-        productos.add(producto);
+    // Métodos de gestión de productos en el kit
+    public void agregarProducto(Producto p) {
+        productos.add(p);
     }
 
-    // Eliminar un producto del kit
-    public void eliminarProducto(Producto producto) {
-        productos.remove(producto);
+    public boolean eliminarProducto(String nombreProducto) {
+        for (Producto p : productos) {
+            if (p.getNombre().equalsIgnoreCase(nombreProducto)) {
+                productos.remove(p);
+                return true; // eliminado con éxito
+            }
+        }
+        return false; // no encontrado
     }
 
-    // Getters y setters para la lista de productos
-    public ArrayList<Producto> getProductos() {
+    // Getter y Setter
+    public List<Producto> getProductos() {
         return productos;
     }
 
-    public void setProductos(ArrayList<Producto> productos) {
+    public void setProductos(List<Producto> productos) {
         this.productos = productos;
     }
-    
-    // Método para buscar un producto por su nombre dentro del kit
-    public Producto getProductoPorNombre(String nombre) {
-        for (Producto p : productos) { // Recorre la lista de productos del kit
-            if (p.getNombre().equalsIgnoreCase(nombre)) { // Compara nombres ignorando mayúsculas/minúsculas
-                return p; // Devuelve el producto encontrado
-            }
+
+    // Metodo para descontar stock de productos, segun compra de kits
+    public void descontarStockProductos(int cantidadKits) {
+        // Descontar del propio kit
+        super.descontarUnidades(cantidadKits);
+
+        // Descontar de cada producto del kit
+        for (Producto p : this.productos) {
+            p.descontarUnidades(cantidadKits);
         }
-        return null; // Retorna null si no se encuentra ningún producto con ese nombre
     }
 
-
-    // Método para mostrar información del kit
-    public void mostrarInfo() {
-        System.out.println("Nombre del Kit: " + getNombre());
-        System.out.println("Precio del Kit: " + getPrecio());
-        System.out.println("Disponible: " + isDisponible());
-        System.out.println("Unidades disponibles: " + getUnidadesDisponibles());
-        System.out.println("Productos dentro del kit:");
+    // Mostrar detalles del Kit
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getNombre())
+          .append(" - Precio Kit: $").append(getPrecio())
+          .append(" - Stock: ").append(getUnidadesDisponibles())
+          .append("\n   Incluye: ");
+        
         for (Producto p : productos) {
-            System.out.println(" - " + p.getNombre() + " ($" + p.getPrecio() + ")");
+            sb.append(p.getNombre()).append(" ($").append(p.getPrecio()).append("), ");
         }
+        return sb.toString();
+    }
+
+    // Recalcular stock del kit según productos internos
+    public void setUnidadesDisponibles(int unidadesDisponibles) {
+        super.setUnidadesDisponibles(unidadesDisponibles);
+
+        // El stock del kit no puede superar al mínimo stock de sus productos
+        int minStock = unidadesDisponibles;
+        for (Producto p : productos) {
+            if (p.getUnidadesDisponibles() < minStock) {
+                minStock = p.getUnidadesDisponibles();
+            }
+        }
+        super.setUnidadesDisponibles(minStock);
     }
 }
