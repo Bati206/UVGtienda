@@ -1,22 +1,22 @@
-package mainuvtienda;
-
 public class Cliente {
     private String clienteID;
     private String nombre;
-    private boolean tipo; // true = estudiante, false = otro tipo
-    private String estudiante; // si es estudiante, puede guardar info adicional
+    private String tipo; // "Estudiante", "General", etc.
+    private String estudianteInfo; // info adicional si es estudiante
     private String tarjetaCredito;
+    private Carrito carrito; // cada cliente tiene su propio carrito
 
     // Constructor
-    public Cliente(String clienteID, String nombre, boolean tipo, String estudiante, String tarjetaCredito) {
+    public Cliente(String clienteID, String nombre, String tipo, String estudianteInfo, String tarjetaCredito) {
         this.clienteID = clienteID;
         this.nombre = nombre;
         this.tipo = tipo;
-        this.estudiante = estudiante;
+        this.estudianteInfo = estudianteInfo;
         this.tarjetaCredito = tarjetaCredito;
+        this.carrito = new Carrito();
     }
 
-    // Getters y Setters
+    // --- Getters y Setters ---
     public String getClienteID() {
         return clienteID;
     }
@@ -33,20 +33,20 @@ public class Cliente {
         this.nombre = nombre;
     }
 
-    public boolean isTipo() {
+    public String getTipo() {
         return tipo;
     }
 
-    public void setTipo(boolean tipo) {
+    public void setTipo(String tipo) {
         this.tipo = tipo;
     }
 
-    public String getEstudiante() {
-        return estudiante;
+    public String getEstudianteInfo() {
+        return estudianteInfo;
     }
 
-    public void setEstudiante(String estudiante) {
-        this.estudiante = estudiante;
+    public void setEstudianteInfo(String estudianteInfo) {
+        this.estudianteInfo = estudianteInfo;
     }
 
     public String getTarjetaCredito() {
@@ -57,12 +57,18 @@ public class Cliente {
         this.tarjetaCredito = tarjetaCredito;
     }
 
-    // Método opcional para mostrar información del cliente
-    public void mostrarInfo() {
-        System.out.println("ID Cliente: " + clienteID);
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Tipo estudiante: " + tipo);
-        System.out.println("Información estudiante: " + estudiante);
-        System.out.println("Tarjeta de crédito: " + tarjetaCredito);
+    public Carrito getCarrito() {
+        return carrito;
     }
+
+    // Métodos
+
+    // Devuelve un resumen de la información del cliente
+    public String getResumenCliente() {
+        return "ID: " + clienteID +
+               ", Nombre: " + nombre +
+               ", Tipo: " + tipo +
+               (tipo.equalsIgnoreCase("Estudiante") ? ", Info: " + estudianteInfo : "");
+    }
+
 }
