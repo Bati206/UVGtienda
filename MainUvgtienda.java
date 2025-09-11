@@ -1,4 +1,4 @@
-package mainuvtienda;
+package mainuvgtienda;
  
 public class MainUvtienda {
 
