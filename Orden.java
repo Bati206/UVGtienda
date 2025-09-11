@@ -1,61 +1,91 @@
+package mainuvgtienda;
+import java.util.ArrayList;
 
 public class Orden {
     private String ordenID;         // Identificador único de la orden
-    private EstadoOrden estado;     // Estado de la orden
-    private Cliente cliente;        // Cliente que genera la orden
-    private Carrito carrito;        // Carrito asociado
-    private Pago pago;              // Pago asociado
-
-    // Constructor
-    public Orden(String ordenID, Cliente cliente, Carrito carrito, Pago pago) {
-        this.ordenID = ordenID;
-        this.cliente = cliente;
-        this.carrito = carrito;
-        this.pago = pago;
-        this.estado = EstadoOrden.PENDIENTE;
+    private String ordenStatus;     // Estado de la orden como String (según UML)
+    private Cliente comprador;      // Cliente que genera la orden (según UML es "comprador")
+    private Carrito carritoUsuario; // Carrito asociado (según UML es "carritoUsuario")
+    
+    // Constructor vacío 
+    public Orden() {
+        this.ordenStatus = "PENDIENTE"; // Estado inicial
     }
-
-    // Procesar la orden
-    public boolean procesarOrden() {
-        if (pago.validarPago()) {
+    
+    // Método para procesar orden con pago y cliente 
+    public void procesarOrden(Pago pago, Cliente cliente) {
+        // Establecer el status del pago
+        pago.setStatusPago();
+        
+        if (pago.getStatusPago()) {
             // Validar que hay stock suficiente para todos los productos
-            for (int i = 0; i < carrito.getProductos().size(); i++) {
-                Producto p = carrito.getProductos().get(i);
-                int cantidad = carrito.getCantidades().get(i);
-                if (cantidad > p.getUnidadesDisponibles()) {
-                    estado = EstadoOrden.RECHAZADA;
-                    return false;
+            boolean stockSuficiente = true;
+            for (Producto p : carritoUsuario.getItems()) {
+                // Aquí asumo que el carrito maneja las cantidades internamente
+                // Si necesitas cantidades específicas, se puede ajustar
+                if (!p.isDisponible() || p.getUnidadesDisponibles() < 1) {
+                    stockSuficiente = false;
+                    break;
                 }
             }
-
-            // Reducir el stock de los productos
-            for (int i = 0; i < carrito.getProductos().size(); i++) {
-                Producto p = carrito.getProductos().get(i);
-                int cantidad = carrito.getCantidades().get(i);
-                p.reducirStock(cantidad);
-
-                // Si es un kit, también reducir stock de productos internos
-                if (p instanceof Kit) {
-                    Kit kit = (Kit) p;
-                    for (Producto subP : kit.getProductos()) {
-                        subP.reducirStock(1 * cantidad);
+            
+            if (stockSuficiente) {
+                // Reducir el stock de los productos
+                for (Producto p : carritoUsuario.getItems()) {
+                    int nuevoStock = p.getUnidadesDisponibles() - 1;
+                    p.setUnidadesDisponibles(nuevoStock);
+                    
+                    
+                    if (p instanceof Kit) {
+                        Kit kit = (Kit) p;
+                        for (Producto subP : kit.getProductos()) {
+                            int nuevoSubStock = subP.getUnidadesDisponibles() - 1;
+                            subP.setUnidadesDisponibles(nuevoSubStock);
+                        }
                     }
                 }
+                
+                ordenStatus = "PROCESADA";
+                carritoUsuario = new Carrito(); // Reiniciar carrito (vaciar)
+            } else {
+                ordenStatus = "RECHAZADA";
             }
-
-            estado = EstadoOrden.PROCESADA;
-            carrito.vaciar(); // Vaciar el carrito tras el éxito
-            return true;
         } else {
-            estado = EstadoOrden.RECHAZADA;
-            return false;
+            ordenStatus = "RECHAZADA";
         }
     }
-
+    
+    // Setters 
+    public void setOrdenID(String ordenID) {
+        this.ordenID = ordenID;
+    }
+    
+    public void setOrdenStatus(String status) {
+        this.ordenStatus = status;
+    }
+    
+    public void setComprador(Cliente cliente) {
+        this.comprador = cliente;
+    }
+    
+    public void setCarritoUsuario(Carrito carrito) {
+        this.carritoUsuario = carrito;
+    }
+    
     // Getters
-    public String getOrdenID() { return ordenID; }
-    public EstadoOrden getEstado() { return estado; }
-    public Cliente getCliente() { return cliente; }
-    public Carrito getCarrito() { return carrito; }
-    public Pago getPago() { return pago; }
+    public String getOrdenID() { 
+        return ordenID; 
+    }
+    
+    public String getOrdenStatus() { 
+        return ordenStatus; 
+    }
+    
+    public Cliente getComprador() { 
+        return comprador; 
+    }
+    
+    public Carrito getCarritoUsuario() { 
+        return carritoUsuario; 
+    }
 }
