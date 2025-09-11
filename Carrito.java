@@ -4,7 +4,7 @@ public class Carrito {
     private Producto[] items;        
     private int totalAPagar;         
     
-    // Constructor vacío (según UML)
+    // Constructor vacío 
     public Carrito() {
         this.items = new Producto[0]; // Inicializar array vacío
         this.totalAPagar = 0;
@@ -111,3 +111,4 @@ public class Carrito {
         return items.length;
     }
 }
+
