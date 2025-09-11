@@ -2,17 +2,17 @@ package mainuvgtienda;
 import java.util.ArrayList;
 
 public class Orden {
-    private String ordenID;         // Identificador único de la orden
-    private String ordenStatus;     // Estado de la orden como String (según UML)
-    private Cliente comprador;      // Cliente que genera la orden (según UML es "comprador")
-    private Carrito carritoUsuario; // Carrito asociado (según UML es "carritoUsuario")
+    private String ordenID;         
+    private String ordenStatus;     
+    private Cliente comprador;      
+    private Carrito carritoUsuario; 
     
     // Constructor vacío 
     public Orden() {
         this.ordenStatus = "PENDIENTE"; // Estado inicial
     }
     
-    // Método para procesar orden con pago y cliente 
+    // Método para procesar orden con pago y cliente (según UML)
     public void procesarOrden(Pago pago, Cliente cliente) {
         // Establecer el status del pago
         pago.setStatusPago();
@@ -35,7 +35,7 @@ public class Orden {
                     int nuevoStock = p.getUnidadesDisponibles() - 1;
                     p.setUnidadesDisponibles(nuevoStock);
                     
-                    
+                    // Si es un kit, también reducir stock de productos internos
                     if (p instanceof Kit) {
                         Kit kit = (Kit) p;
                         for (Producto subP : kit.getProductos()) {
@@ -49,6 +49,8 @@ public class Orden {
                 carritoUsuario = new Carrito(); // Reiniciar carrito (vaciar)
             } else {
                 ordenStatus = "RECHAZADA";
+                // NOTA: Si se rechaza por falta de stock, 
+                // no restauramos nada porque no se había reducido aún
             }
         } else {
             ordenStatus = "RECHAZADA";
