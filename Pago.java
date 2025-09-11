@@ -1,5 +1,3 @@
-package mainuvgtienda;
-
 public class Pago {
     
     
