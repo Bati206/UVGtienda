@@ -354,7 +354,7 @@ public class Main {
         int stock = leerEntero();
         
         boolean disponible = stock > 0;
-        Producto nuevoProducto = new Producto(nombre, precio, disponible, stock);
+        Producto nuevoProducto = new Producto(nombre, precio, stock);
         
         if (sistema.añadirProducto(nuevoProducto)) {
             System.out.println("Producto agregado exitosamente.");
