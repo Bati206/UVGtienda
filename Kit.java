@@ -2,78 +2,102 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Kit extends Producto {
-    private List<Producto> productos;
+
+    private List<Producto> productos; // Productos que conforman el kit
 
     // Constructor
-    public Kit(String nombre, double precio, Producto[] productos, boolean disponible, int stock) {
-        super(nombre, precio, disponible, stock);
+    public Kit(String nombre, double precioInicial) {
+        // Por defecto el kit no tiene stock definido aún
+        super(nombre, precioInicial, 0);
         this.productos = new ArrayList<>();
-        for (Producto p : productos) {
-            this.productos.add(p);
+    }
+
+    // Agregar producto al kit
+    public void agregarProducto(Producto p) {
+        if (p != null && !productos.contains(p)) {
+            productos.add(p);
+            calcularPrecioTotal();
+            actualizarStock();
         }
     }
 
-    // Métodos de gestión de productos en el kit
-    public void agregarProducto(Producto p) {
-        productos.add(p);
+    // Eliminar producto del kit
+    public void eliminarProducto(Producto p) {
+        if (p != null && productos.contains(p)) {
+            productos.remove(p);
+            calcularPrecioTotal();
+            actualizarStock();
+        }
     }
 
-    public boolean eliminarProducto(String nombreProducto) {
+    // Calcular el precio total del kit (suma de precios de los productos)
+    //    Puede incluir descuentos o márgenes en el futuro
+    public void calcularPrecioTotal() {
+        double total = 0.0;
         for (Producto p : productos) {
-            if (p.getNombre().equalsIgnoreCase(nombreProducto)) {
-                productos.remove(p);
-                return true; // eliminado con éxito
+            total += p.getPrecio();
+        }
+        // Por ahora el precio del kit es la suma directa
+        super.setPrecio(total);
+    }
+
+    // Actualizar el stock del kit según el producto con menor stock
+    //    (no se puede vender más kits que el producto más limitado)
+    public void actualizarStock() {
+        if (productos.isEmpty()) {
+            setUnidadesDisponibles(0);
+            setDisponible(false);
+            return;
+        }
+
+        int stockMinimo = Integer.MAX_VALUE;
+        for (Producto p : productos) {
+            if (p.getUnidadesDisponibles() < stockMinimo) {
+                stockMinimo = p.getUnidadesDisponibles();
             }
         }
-        return false; // no encontrado
+
+        setUnidadesDisponibles(stockMinimo);
+        setDisponible(stockMinimo > 0);
     }
 
-    // Getter y Setter
+    // Verifica si un producto pertenece al kit
+    public boolean contieneProducto(String nombre) {
+        for (Producto p : productos) {
+            if (p.getNombre().equalsIgnoreCase(nombre)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Reduce el stock de los productos individuales al vender el kit
+    public void reducirStockKit(int cantidad) {
+        if (cantidad <= getUnidadesDisponibles()) {
+            for (Producto p : productos) {
+                p.reducirStock(cantidad);
+            }
+            actualizarStock();
+        }
+    }
+
+    // Obtener lista de productos del kit
     public List<Producto> getProductos() {
         return productos;
     }
 
-    public void setProductos(List<Producto> productos) {
-        this.productos = productos;
-    }
-
-    // Metodo para descontar stock de productos, segun compra de kits
-    public void descontarStockProductos(int cantidadKits) {
-        // Descontar del propio kit
-        super.descontarUnidades(cantidadKits);
-
-        // Descontar de cada producto del kit
-        for (Producto p : this.productos) {
-            p.descontarUnidades(cantidadKits);
-        }
-    }
-
-    // Mostrar detalles del Kit
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getNombre())
-          .append(" - Precio Kit: $").append(getPrecio())
-          .append(" - Stock: ").append(getUnidadesDisponibles())
-          .append("\n   Incluye: ");
-        
+        sb.append("KIT: ").append(getNombre())
+          .append(" | Precio total: $").append(String.format("%.2f", getPrecio()))
+          .append(" | Stock: ").append(getUnidadesDisponibles()).append("\n")
+          .append("  Incluye:\n");
+
         for (Producto p : productos) {
-            sb.append(p.getNombre()).append(" ($").append(p.getPrecio()).append("), ");
+            sb.append("   - ").append(p.getNombre())
+              .append(" ($").append(String.format("%.2f", p.getPrecio())).append(")\n");
         }
         return sb.toString();
-    }
-
-    // Recalcular stock del kit según productos internos
-    public void setUnidadesDisponibles(int unidadesDisponibles) {
-        super.setUnidadesDisponibles(unidadesDisponibles);
-
-        // El stock del kit no puede superar al mínimo stock de sus productos
-        int minStock = unidadesDisponibles;
-        for (Producto p : productos) {
-            if (p.getUnidadesDisponibles() < minStock) {
-                minStock = p.getUnidadesDisponibles();
-            }
-        }
-        super.setUnidadesDisponibles(minStock);
     }
 }
