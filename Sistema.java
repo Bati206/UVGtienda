@@ -212,18 +212,18 @@ public class Sistema {
     
     private void inicializarInventario() {
         // Productos de ejemplo
-        productos.add(new Producto("Protoboard", 50.00, true, 20));
-        productos.add(new Producto("Bolsa 100 jumpers", 75.00, true, 20));
-        productos.add(new Producto("Capacitor 10 microF", 1.50, true, 7));
-        productos.add(new Producto("Resistencia 20K Ohm", 1.00, true, 8));
-        productos.add(new Producto("Circuito integrado TTL 4 compuertas AND", 5.00, true, 12));
+        productos.add(new Producto("Protoboard", 50.00, 20));
+        productos.add(new Producto("Bolsa 100 jumpers", 75.00, 20));
+        productos.add(new Producto("Capacitor 10 microF", 1.50, 7));
+        productos.add(new Producto("Resistencia 20K Ohm", 1.00, 8));
+        productos.add(new Producto("Circuito integrado TTL 4 compuertas AND", 5.00, 12));
         
         // Kit de ejemplo
         Producto[] productosKit = {
             buscarProductoPorNombre("Protoboard"),
             buscarProductoPorNombre("Bolsa 100 jumpers")
         };
-        this.kits.add(new Kit("Kit Electrónica básica", 125.00, productosKit, true, 10));
+        this.kits.add(new Kit("Kit Electrónica básica", 125.00));
     }
 
     public void cerrarSesion() {
