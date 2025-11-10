@@ -1,8 +1,8 @@
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Sistema {
-    // Atributos principales del sistema
     private String nombre;
     private String contrasena;
     private List<Cliente> clientes;
@@ -11,7 +11,6 @@ public class Sistema {
     private List<Orden> ordenes;
     private Cliente clienteActual;
     
-    // Constructor
     public Sistema(String nombre, String contrasena) {
         this.nombre = nombre;
         this.contrasena = contrasena;
@@ -20,12 +19,10 @@ public class Sistema {
         this.kits = new ArrayList<>();
         this.ordenes = new ArrayList<>();
         this.clienteActual = null;
-        
-        // Inicializar con productos y kits de ejemplo
         this.inicializarInventario();
     }
     
-    // ========== MÉTODOS DE AUTENTICACIÓN ==========
+    // ========== AUTENTICACIÓN ==========
     
     public boolean esAdministrador(String nombre, String contrasena) {
         return this.nombre.equals(nombre) && this.contrasena.equals(contrasena);
@@ -43,19 +40,17 @@ public class Sistema {
     
     public boolean registrarCliente(String clienteID, String nombre, String tipo, 
                                    String estudianteInfo, String tarjetaCredito) {
-        // Verificar si el cliente ya existe
         for (Cliente c : clientes) {
             if (c.getClienteID().equals(clienteID)) {
-                return false; // Cliente ya existe
+                return false;
             }
         }
-        
         Cliente nuevoCliente = new Cliente(clienteID, nombre, tipo, estudianteInfo, tarjetaCredito);
         clientes.add(nuevoCliente);
         return true;
     }
     
-    // ========== MÉTODOS DE ADMINISTRACIÓN DE PRODUCTOS (SOLO ADMIN) ==========
+    // ========== ADMINISTRACIÓN DE PRODUCTOS ==========
     
     public boolean añadirProducto(Producto producto) {
         if (producto != null) {
@@ -93,14 +88,14 @@ public class Sistema {
         return false;
     }
     
-    // ========== MÉTODOS DE CONSULTA DEL CATÁLOGO ==========
+    // ========== CONSULTA DE CATÁLOGO ==========
     
     public List<Producto> getProductos() {
-        return new ArrayList<>(productos); // Retorna una copia porque es mas seguro.
+        return new ArrayList<>(productos);
     }
     
     public List<Kit> getKits() {
-        return new ArrayList<>(kits); // Retorna una copia porque es mas seguro.
+        return new ArrayList<>(kits);
     }
     
     public List<Producto> getProductosDisponibles() {
@@ -141,12 +136,11 @@ public class Sistema {
         return null;
     }
     
-    // ========== MÉTODOS DE GESTIÓN DEL CARRITO ==========
+    // ========== GESTIÓN DEL CARRITO ==========
     
     public boolean agregarAlCarrito(String nombreItem, int cantidad) {
         if (clienteActual == null) return false;
         
-        // Buscar primero en productos
         Producto producto = buscarProductoPorNombre(nombreItem);
         if (producto != null) {
             boolean agregado = true;
@@ -159,7 +153,6 @@ public class Sistema {
             return agregado;
         }
         
-        // Buscar en kits
         Kit kit = buscarKitPorNombre(nombreItem);
         if (kit != null) {
             boolean agregado = true;
@@ -172,7 +165,7 @@ public class Sistema {
             return agregado;
         }
         
-        return false; // No se encontró el item
+        return false;
     }
     
     public boolean eliminarDelCarrito(String nombreItem) {
@@ -198,17 +191,57 @@ public class Sistema {
         return null;
     }
     
-    // ========== MÉTODOS DE PROCESAMIENTO DE ÓRDENES ==========
+    // ========== PROCESAMIENTO DE ÓRDENES ==========
     
-    // PENDIENTE
-    
-    // ========== MÉTODOS DE VALIDACIÓN ==========
-    
-    public boolean comprobarContrasena(String contrasena) {
-        return this.contrasena.equals(contrasena);
+    public String procesarOrden(String metodoPago) {
+        if (clienteActual == null) {
+            return "ERROR: No hay cliente con sesión activa";
+        }
+        
+        Carrito carrito = clienteActual.getCarrito();
+        if (carrito == null || carrito.estaVacio()) {
+            return "ERROR: El carrito está vacío";
+        }
+        
+        // Crear orden
+        Orden nuevaOrden = new Orden();
+        String ordenID = "ORD-" + System.currentTimeMillis();
+        nuevaOrden.setOrdenID(ordenID);
+        nuevaOrden.setComprador(clienteActual);
+        nuevaOrden.setCarritoUsuario(carrito);
+        
+        // Crear pago
+        Pago pago = new Pago(metodoPago, clienteActual);
+        
+        // Procesar orden (esto valida pago y reduce stock)
+        nuevaOrden.procesarOrden(pago, clienteActual);
+        
+        // Agregar orden a la lista
+        ordenes.add(nuevaOrden);
+        
+        // Limpiar carrito del cliente
+        clienteActual.getCarrito().vaciar();
+        
+        return nuevaOrden.getOrdenStatus();
     }
     
-    // ========== MÉTODOS AUXILIARES ==========
+    public List<Orden> getOrdenesDelCliente() {
+        if (clienteActual == null) return new ArrayList<>();
+        
+        List<Orden> ordenesCliente = new ArrayList<>();
+        for (Orden o : ordenes) {
+            if (o.getComprador().getClienteID().equals(clienteActual.getClienteID())) {
+                ordenesCliente.add(o);
+            }
+        }
+        return ordenesCliente;
+    }
+    
+    public List<Orden> getOrdenes() {
+        return new ArrayList<>(ordenes);
+    }
+    
+    // ========== AUXILIARES ==========
     
     private void inicializarInventario() {
         // Productos de ejemplo
@@ -218,19 +251,21 @@ public class Sistema {
         productos.add(new Producto("Resistencia 20K Ohm", 1.00, 8));
         productos.add(new Producto("Circuito integrado TTL 4 compuertas AND", 5.00, 12));
         
-        // Kit de ejemplo
-        Producto[] productosKit = {
-            buscarProductoPorNombre("Protoboard"),
-            buscarProductoPorNombre("Bolsa 100 jumpers")
-        };
-        this.kits.add(new Kit("Kit Electrónica básica", 125.00));
+        // Kit de ejemplo CON productos agregados
+        Kit kitBasico = new Kit("Kit Electrónica Básica", 125.00, 
+            "Kit ideal para principiantes en electrónica. Incluye los componentes esenciales para comenzar tus proyectos.");
+        kitBasico.agregarProducto(buscarProductoPorNombre("Protoboard"));
+        kitBasico.agregarProducto(buscarProductoPorNombre("Bolsa 100 jumpers"));
+        kits.add(kitBasico);
     }
 
     public void cerrarSesion() {
         this.clienteActual = null;
     }
     
-    // ========== GETTERS BÁSICOS ==========
+    public boolean comprobarContrasena(String contrasena) {
+        return this.contrasena.equals(contrasena);
+    }
     
     public String getNombre() {
         return nombre;
@@ -238,5 +273,9 @@ public class Sistema {
     
     public List<Cliente> getClientes() {
         return new ArrayList<>(clientes);
+    }
+    
+    public Cliente getClienteActual() {
+        return clienteActual;
     }
 }
