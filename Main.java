@@ -1,12 +1,12 @@
 import java.util.List;
 import java.util.Scanner;
+// para que al crear un Kit como administrador este se le muestre al cliente se le tiene que agregar un producto primero
 
 public class Main {
     private static Sistema sistema;
     private static Scanner scanner;
     
     public static void main(String[] args) {
-        // Inicializar sistema
         sistema = new Sistema("admin", "admin123");
         scanner = new Scanner(System.in);
         
@@ -161,10 +161,10 @@ public class Main {
                     eliminarItemDelCarrito();
                     break;
                 case 6:
-                    //procesarOrdenCliente() --- PENDIENTE
+                    procesarOrdenCliente();
                     break;
                 case 7:
-                    // mostrarOrdenesCliente() --- PENDIENTE
+                    mostrarOrdenesCliente();
                     break;
                 case 8:
                     sistema.cerrarSesion();
@@ -273,8 +273,93 @@ public class Main {
         }
     }
     
-    // PENDIENTE: procesarOrdenCliente()
-    // PENDIENTE: mostrarOrdenesCliente()
+    private static void procesarOrdenCliente() {
+        System.out.println("\n═══════════ PROCESAR ORDEN ═══════════");
+        
+        Carrito carrito = sistema.getCarritoActual();
+        if (carrito == null || carrito.estaVacio()) {
+            System.out.println("Su carrito está vacío. Agregue productos antes de procesar una orden.");
+            return;
+        }
+        
+        // Mostrar resumen
+        System.out.println("\n--- RESUMEN DE SU ORDEN ---");
+        mostrarCarrito();
+        
+        System.out.println("\nSeleccione método de pago:");
+        System.out.println("1. Tarjeta de crédito");
+        System.out.println("2. Transferencia bancaria");
+        System.out.println("3. Efectivo");
+        System.out.print("Opción: ");
+        
+        int opcionPago = leerEntero();
+        String metodoPago;
+        
+        switch (opcionPago) {
+            case 1:
+                metodoPago = "tarjeta";
+                break;
+            case 2:
+                metodoPago = "transferencia";
+                break;
+            case 3:
+                metodoPago = "efectivo";
+                break;
+            default:
+                System.out.println("Opción no válida. Cancelando orden.");
+                return;
+        }
+        
+        System.out.print("\n¿Confirmar orden? (S/N): ");
+        String confirmar = scanner.nextLine();
+        
+        if (confirmar.equalsIgnoreCase("S")) {
+            String resultado = sistema.procesarOrden(metodoPago);
+            
+            System.out.println("\n═══════════════════════════════════════");
+            if (resultado.equals("PROCESADA")) {
+                System.out.println("✓ ¡ORDEN PROCESADA EXITOSAMENTE!");
+                System.out.println("  El stock ha sido actualizado.");
+                System.out.println("  Su carrito ha sido vaciado.");
+                System.out.println("  Gracias por su compra.");
+            } else {
+                System.out.println("✗ ORDEN RECHAZADA");
+                if (metodoPago.equals("tarjeta")) {
+                    System.out.println("  Motivo: No se encontró información de tarjeta de crédito.");
+                } else {
+                    System.out.println("  Motivo: Stock insuficiente para algunos productos.");
+                }
+            }
+            System.out.println("═══════════════════════════════════════");
+        } else {
+            System.out.println("Orden cancelada.");
+        }
+    }
+    
+    private static void mostrarOrdenesCliente() {
+        System.out.println("\n═══════════ MIS ÓRDENES ═══════════");
+        List<Orden> ordenes = sistema.getOrdenesDelCliente();
+        
+        if (ordenes.isEmpty()) {
+            System.out.println("No tiene órdenes registradas.");
+            return;
+        }
+        
+        System.out.println("Sus órdenes:");
+        System.out.println("─────────────────────────────────────────────");
+        for (int i = 0; i < ordenes.size(); i++) {
+            Orden orden = ordenes.get(i);
+            System.out.println((i + 1) + ". Orden ID: " + orden.getOrdenID());
+            System.out.println("   Estado: " + orden.getOrdenStatus());
+            System.out.println("   Comprador: " + orden.getComprador().getNombre());
+            
+            if (orden.getCarritoUsuario() != null) {
+                System.out.println("   Total pagado: $" + 
+                    String.format("%.2f", orden.getCarritoUsuario().getTotalAPagar()));
+            }
+            System.out.println();
+        }
+    }
     
     // ========== MENÚ DEL ADMINISTRADOR ==========
     
@@ -286,9 +371,12 @@ public class Main {
             System.out.println("2. Agregar nuevo producto");
             System.out.println("3. Eliminar producto");
             System.out.println("4. Ver todos los kits");
-            System.out.println("5. Ver todas las órdenes");
-            System.out.println("6. Ver todos los clientes");
-            System.out.println("7. Cerrar sesión");
+            System.out.println("5. Crear nuevo kit");
+            System.out.println("6. Agregar producto a kit existente");
+            System.out.println("7. Eliminar producto de kit");
+            System.out.println("8. Ver todas las órdenes");
+            System.out.println("9. Ver todos los clientes");
+            System.out.println("10. Cerrar sesión");
             System.out.print("Seleccione una opción: ");
             
             opcion = leerEntero();
@@ -307,18 +395,27 @@ public class Main {
                     mostrarTodosLosKits();
                     break;
                 case 5:
-                    // mostrarTodasLasOrdenes() -- PENDIENTE
+                    crearNuevoKit();
                     break;
                 case 6:
-                    mostrarTodosLosClientes();
+                    agregarProductoAKit();
                     break;
                 case 7:
+                    eliminarProductoDeKit();
+                    break;
+                case 8:
+                    mostrarTodasLasOrdenes();
+                    break;
+                case 9:
+                    mostrarTodosLosClientes();
+                    break;
+                case 10:
                     System.out.println("Sesión de administrador cerrada.");
                     break;
                 default:
                     System.out.println("Opción no válida.");
             }
-        } while (opcion != 7);
+        } while (opcion != 10);
     }
     
     // ========== FUNCIONES DEL ADMINISTRADOR ==========
@@ -353,7 +450,6 @@ public class Main {
         System.out.print("Cantidad inicial en stock: ");
         int stock = leerEntero();
         
-        boolean disponible = stock > 0;
         Producto nuevoProducto = new Producto(nombre, precio, stock);
         
         if (sistema.añadirProducto(nuevoProducto)) {
@@ -395,6 +491,123 @@ public class Main {
         }
     }
     
+    private static void crearNuevoKit() {
+        System.out.println("\n═══════════ CREAR NUEVO KIT ═══════════");
+        
+        System.out.print("Nombre del kit: ");
+        String nombre = scanner.nextLine();
+        
+        System.out.print("Precio base: $");
+        double precioBase = leerDouble();
+        
+        System.out.print("Descripción del kit: ");
+        String descripcion = scanner.nextLine();
+        
+        Kit nuevoKit = new Kit(nombre, precioBase, descripcion);
+        
+        if (sistema.añadirKit(nuevoKit)) {
+            System.out.println("\n¡Kit creado exitosamente!");
+            System.out.println("Ahora puede agregar productos al kit desde la opción 6.");
+        } else {
+            System.out.println("Error al crear el kit.");
+        }
+    }
+    
+    private static void agregarProductoAKit() {
+        System.out.println("\n═══════════ AGREGAR PRODUCTO A KIT ═══════════");
+        
+        mostrarTodosLosKits();
+        
+        System.out.print("\nIngrese el nombre del kit: ");
+        String nombreKit = scanner.nextLine();
+        
+        Kit kit = sistema.buscarKitPorNombre(nombreKit);
+        if (kit == null) {
+            System.out.println("Kit no encontrado.");
+            return;
+        }
+        
+        mostrarTodosLosProductos();
+        
+        System.out.print("\nIngrese el nombre del producto a agregar: ");
+        String nombreProducto = scanner.nextLine();
+        
+        Producto producto = sistema.buscarProductoPorNombre(nombreProducto);
+        if (producto == null) {
+            System.out.println("Producto no encontrado.");
+            return;
+        }
+        
+        kit.agregarProducto(producto);
+        System.out.println("Producto agregado al kit exitosamente.");
+        System.out.println("Nuevo precio del kit: $" + String.format("%.2f", kit.getPrecio()));
+    }
+    
+    private static void eliminarProductoDeKit() {
+        System.out.println("\n═══════════ ELIMINAR PRODUCTO DE KIT ═══════════");
+        
+        mostrarTodosLosKits();
+        
+        System.out.print("\nIngrese el nombre del kit: ");
+        String nombreKit = scanner.nextLine();
+        
+        Kit kit = sistema.buscarKitPorNombre(nombreKit);
+        if (kit == null) {
+            System.out.println("Kit no encontrado.");
+            return;
+        }
+        
+        List<Producto> productosKit = kit.getProductos();
+        if (productosKit.isEmpty()) {
+            System.out.println("Este kit no tiene productos.");
+            return;
+        }
+        
+        System.out.println("\nProductos en el kit:");
+        for (int i = 0; i < productosKit.size(); i++) {
+            System.out.println((i + 1) + ". " + productosKit.get(i).getNombre());
+        }
+        
+        System.out.print("\nIngrese el nombre del producto a eliminar: ");
+        String nombreProducto = scanner.nextLine();
+        
+        Producto producto = sistema.buscarProductoPorNombre(nombreProducto);
+        if (producto == null) {
+            System.out.println("Producto no encontrado.");
+            return;
+        }
+        
+        kit.eliminarProducto(producto);
+        System.out.println("Producto eliminado del kit exitosamente.");
+        System.out.println("Nuevo precio del kit: $" + String.format("%.2f", kit.getPrecio()));
+    }
+    
+    private static void mostrarTodasLasOrdenes() {
+        System.out.println("\n═══════════ TODAS LAS ÓRDENES ═══════════");
+        List<Orden> ordenes = sistema.getOrdenes();
+        
+        if (ordenes.isEmpty()) {
+            System.out.println("No hay órdenes registradas.");
+            return;
+        }
+        
+        System.out.println("Lista de todas las órdenes:");
+        System.out.println("─────────────────────────────────────────────");
+        for (int i = 0; i < ordenes.size(); i++) {
+            Orden orden = ordenes.get(i);
+            System.out.println((i + 1) + ". Orden ID: " + orden.getOrdenID());
+            System.out.println("   Estado: " + orden.getOrdenStatus());
+            System.out.println("   Cliente: " + orden.getComprador().getNombre() + 
+                             " (ID: " + orden.getComprador().getClienteID() + ")");
+            
+            if (orden.getCarritoUsuario() != null) {
+                System.out.println("   Total: $" + 
+                    String.format("%.2f", orden.getCarritoUsuario().getTotalAPagar()));
+                System.out.println("   Items: " + orden.getCarritoUsuario().getCantidadItems());
+            }
+            System.out.println();
+        }
+    }
     
     private static void mostrarTodosLosClientes() {
         System.out.println("\n═══════════ TODOS LOS CLIENTES ═══════════");
