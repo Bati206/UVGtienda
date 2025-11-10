@@ -4,17 +4,18 @@ import java.util.List;
 public class Kit extends Producto {
 
     private List<Producto> productos; // Productos que conforman el kit
+    private String descripcion; // Descripción del kit
 
     // Constructor
-    public Kit(String nombre, double precioInicial) {
-        // Por defecto el kit no tiene stock definido aún
+    public Kit(String nombre, double precioInicial, String descripcion) {
         super(nombre, precioInicial, 0);
         this.productos = new ArrayList<>();
+        this.descripcion = descripcion;
     }
 
     // Agregar producto al kit
     public void agregarProducto(Producto p) {
-        if (p != null && !productos.contains(p)) {
+        if (p != null && !productos.contains(p) && !(p instanceof Kit)) {
             productos.add(p);
             calcularPrecioTotal();
             actualizarStock();
@@ -31,18 +32,16 @@ public class Kit extends Producto {
     }
 
     // Calcular el precio total del kit (suma de precios de los productos)
-    //    Puede incluir descuentos o márgenes en el futuro
     public void calcularPrecioTotal() {
         double total = 0.0;
         for (Producto p : productos) {
             total += p.getPrecio();
         }
-        // Por ahora el precio del kit es la suma directa
-        super.setPrecio(total);
+        // Aplicar un descuento del 10% por comprar en kit
+        super.setPrecio(total * 0.9);
     }
 
     // Actualizar el stock del kit según el producto con menor stock
-    //    (no se puede vender más kits que el producto más limitado)
     public void actualizarStock() {
         if (productos.isEmpty()) {
             setUnidadesDisponibles(0);
@@ -83,21 +82,37 @@ public class Kit extends Producto {
 
     // Obtener lista de productos del kit
     public List<Producto> getProductos() {
-        return productos;
+        return new ArrayList<>(productos);
+    }
+
+    // Getter y Setter de descripción
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("KIT: ").append(getNombre())
-          .append(" | Precio total: $").append(String.format("%.2f", getPrecio()))
+          .append(" | Precio: $").append(String.format("%.2f", getPrecio()))
+          .append(" (10% descuento incluido)")
           .append(" | Stock: ").append(getUnidadesDisponibles()).append("\n")
+          .append("  Descripción: ").append(descripcion).append("\n")
           .append("  Incluye:\n");
 
-        for (Producto p : productos) {
-            sb.append("   - ").append(p.getNombre())
-              .append(" ($").append(String.format("%.2f", p.getPrecio())).append(")\n");
+        if (productos.isEmpty()) {
+            sb.append("   - (Sin productos aún)\n");
+        } else {
+            for (Producto p : productos) {
+                sb.append("   - ").append(p.getNombre())
+                  .append(" ($").append(String.format("%.2f", p.getPrecio())).append(")\n");
+            }
         }
         return sb.toString();
     }
 }
+
