@@ -354,8 +354,7 @@ public class Main {
             System.out.println("   Comprador: " + orden.getComprador().getNombre());
             
             if (orden.getCarritoUsuario() != null) {
-                System.out.println("   Total pagado: $" + 
-                    String.format("%.2f", orden.getCarritoUsuario().getTotalAPagar()));
+                System.out.println("   SALDO: SALDADO" );
             }
             System.out.println();
         }
