@@ -252,7 +252,7 @@ public class Sistema {
         productos.add(new Producto("Circuito integrado TTL 4 compuertas AND", 5.00, 12));
         
         // Kit de ejemplo CON productos agregados
-        Kit kitBasico = new Kit("Kit Electrónica Básica", 125.00, 
+        Kit kitBasico = new Kit("Electronica Basica", 125.00, 
             "Kit ideal para principiantes en electrónica. Incluye los componentes esenciales para comenzar tus proyectos.");
         kitBasico.agregarProducto(buscarProductoPorNombre("Protoboard"));
         kitBasico.agregarProducto(buscarProductoPorNombre("Bolsa 100 jumpers"));
@@ -279,3 +279,4 @@ public class Sistema {
         return clienteActual;
     }
 }
+
