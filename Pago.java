@@ -29,7 +29,7 @@ public class Pago {
      }
 
      //Set del tarjetaHabiente
-     public void setTarjetaHabiente(Cliente, cliente){
+     public void setTarjetaHabiente(Cliente cliente){
          this.tarjetaHabiente = cliente;
      }
      
