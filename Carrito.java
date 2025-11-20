@@ -13,7 +13,7 @@ public class Carrito {
 
     // Contructor copia
     public Carrito(Carrito otro) {
-        this.items = new Arraylist<>(otro.items);
+        this.items = new ArrayList<>(otro.items);
         calcularTotal();
     }
 
@@ -87,4 +87,5 @@ public class Carrito {
         calcularTotal();
     }
 }
+
 
