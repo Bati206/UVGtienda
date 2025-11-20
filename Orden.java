@@ -20,42 +20,39 @@ public class Orden {
             // Validar que hay stock suficiente para todos los productos
             boolean stockSuficiente = true;
             for (Producto p : carritoUsuario.getItems()) {
-                // Aquí asumo que el carrito maneja las cantidades internamente
-                // Si necesitas cantidades específicas, se puede ajustar
-                if (!p.isDisponible() || p.getUnidadesDisponibles() < 1) {
-                    stockSuficiente = false;
-                    break;
-                }
-            }
-            
-            if (stockSuficiente) {
-                // Reducir el stock de los productos
-                for (Producto p : carritoUsuario.getItems()) {
-                    int nuevoStock = p.getUnidadesDisponibles() - 1;
-                    p.setUnidadesDisponibles(nuevoStock);
-                    
-                    // Si es un kit, también reducir stock de productos internos
-                    if (p instanceof Kit) {
-                        Kit kit = (Kit) p;
-                        for (Producto subP : kit.getProductos()) {
-                            int nuevoSubStock = subP.getUnidadesDisponibles() - 1;
-                            subP.setUnidadesDisponibles(nuevoSubStock);
-                        }
+                if (p instanceof Kit) {
+                    Kit k = (Kit) p;
+                    if (k.getUnidadesDisponibles() < 1) {
+                        stockSuficiente = false;
+                        break;
+                    }
+                } else {
+                    if (!p.isDisponible() || p.getUnidadesDisponibles() < 1) {
+                         stockSuficiente = false;
+                        break;
                     }
                 }
-                
+            }
+            if (stockSuficiente) {
+                for (Producto p : carritoUsuario.getItems()) {
+                    if (p instanceof Kit) {
+                        Kit k = (Kit) p;
+                        k.reducirStockKit(1);
+                    } else {
+                        p.reducirStock(1);
+                    }
+                }
                 ordenStatus = "PROCESADA";
-                carritoUsuario = new Carrito(); // Reiniciar carrito (vaciar)
+                // OJO: NO se vacía el carritoUsuario aquí.
+                // Sistema se encarga de vaciar el carrito del cliente
+                // y la orden conserva una copia del carrito.
             } else {
-                ordenStatus = "RECHAZADA";
-                // NOTA: Si se rechaza por falta de stock, 
-                // no restauramos nada porque no se había reducido aún
+                 ordenStatus = "RECHAZADA";
             }
         } else {
             ordenStatus = "RECHAZADA";
         }
     }
-    
     // Setters 
     public void setOrdenID(String ordenID) {
         this.ordenID = ordenID;
@@ -90,4 +87,5 @@ public class Orden {
         return carritoUsuario; 
     }
 }
+
 
