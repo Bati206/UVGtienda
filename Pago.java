@@ -16,16 +16,17 @@ public class Pago {
      //Si en dado caso el método de pago no es tarjeta de credito entonces automaticamente cambia el valor a true.
      public void setStatusPago() {
         if (this.metodoPago.equalsIgnoreCase("tarjeta")){ 
-            if (this.tarjetaHabiente.getTarjetaCredito() != null){
-            this.statusPago = true;
+            String tc = this.tarjetaHabiente.getTarjetaCredito();
+            if (tc != null && !tc.trim().isEmpty()) {
+                this.statusPago = true;
+            } else {
+                this.statusPago = false;
             }
-         else {
-            this.statusPago = false;
+        } else {
+             // transferencia o efectivo se acepta
+            this.statusPago = true;
         }
-        } else{
-        this.statusPago = true; //Si el método de pago no es tarjeta automaticamente cambiar el valor a true
-        }
-    }
+     }
 
      //Set del tarjetaHabiente
      public void setTarjetaHabiente(Cliente, cliente){
