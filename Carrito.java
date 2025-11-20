@@ -11,6 +11,12 @@ public class Carrito {
         this.totalAPagar = 0.0;
     }
 
+    // Contructor copia
+    public Carrito(Carrito otro) {
+        this.items = new Arraylist<>(otro.items);
+        calcularTotal();
+    }
+
     // Agregar item (Producto o Kit)
     public boolean agregarItem(Producto producto) {
         if (producto != null && producto.isDisponible() && producto.getUnidadesDisponibles() > 0) {
@@ -81,3 +87,4 @@ public class Carrito {
         calcularTotal();
     }
 }
+
